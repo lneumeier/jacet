@@ -31,7 +31,8 @@ Open an issue with:
 
 ## Development setup
 
-Requires JDK 25. Uses the Gradle wrapper — no global Gradle needed.
+Requires a JDK 17 or newer to bootstrap the Gradle wrapper — the build auto-provisions
+the JDK 25 toolchain it compiles with. No global Gradle needed.
 
 ```bash
 # Build everything

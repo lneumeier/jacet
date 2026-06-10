@@ -1,0 +1,25 @@
+// Common configuration for build tool plugins
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.21.2'
+}
+
+scmVersion {
+    tag {
+        prefix = 'v'
+    }
+    repository {
+        directory = file('..').absolutePath
+    }
+}
+
+allprojects {
+    group = 'de.irotation.jacet'
+    version = scmVersion.version
+}
+
+subprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+}

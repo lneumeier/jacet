@@ -1,0 +1,64 @@
+plugins {
+    id 'application'
+    id 'org.graalvm.buildtools.native' version '1.1.1'
+}
+
+dependencies {
+    implementation project(':jacet-core')
+    implementation 'info.picocli:picocli:4.7.7'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.7'
+}
+
+application {
+    mainClass = 'de.irotation.jacet.cli.Main'
+}
+
+// Generate the CLI version constant from the axion-release version so `jacet --version`
+// always matches the published artifact, instead of a hand-maintained literal.
+def versionDir = layout.buildDirectory.dir('generated/sources/version/java/main')
+def versionValue = project.version.toString() // resolved at configuration time; a plain String keeps the task config-cache-safe
+
+def generateVersionSource = tasks.register('generateVersionSource') {
+    inputs.property('version', versionValue)
+    outputs.dir(versionDir)
+    doLast {
+        def pkg = versionDir.get().dir('de/irotation/jacet/cli').asFile
+        pkg.mkdirs()
+        new File(pkg, 'BuildInfo.java').text = """\
+package de.irotation.jacet.cli;
+
+// Generated at build time from the axion-release version. Do not edit.
+final class BuildInfo {
+
+  static final String VERSION = "${versionValue}";
+
+  private BuildInfo() {
+  }
+}
+"""
+    }
+}
+
+sourceSets.main.java.srcDir(generateVersionSource)
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'jacet'
+            mainClass = 'de.irotation.jacet.cli.Main'
+            buildArgs.addAll(
+                '--no-fallback',
+                '-O2',
+            )
+        }
+    }
+}
+
+tasks.named('run') {
+    workingDir = rootProject.projectDir.parentFile
+    standardInput = System.in
+    // The GraalVM buildtools plugin declares build/native/agent-output/run as a task output,
+    // which makes Gradle skip repeat invocations as UP-TO-DATE — silently dropping the exec
+    // (no output, exit 0) because --args is not a tracked input. A run task must always run.
+    outputs.upToDateWhen { false }
+}

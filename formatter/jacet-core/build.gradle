@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'antlr'
+}
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.13.2'
+    implementation 'org.antlr:antlr4-runtime:4.13.2'
+}
+
+// The antlr plugin registers the generated-source root as a srcDir itself (it derives the
+// root from outputDirectory minus the -package path), so no explicit srcDir is needed —
+// a second registration of the same dir would duplicate every generated file in sourcesJar.
+generateGrammarSource {
+    arguments += ['-visitor', '-no-listener', '-package', 'de.irotation.jacet.parser']
+    outputDirectory = layout.buildDirectory.dir('generated/sources/antlr/java/main/de/irotation/jacet/parser').get().asFile
+}
+
+// The antlr plugin wires the `antlr` configuration into `api`, which leaks the
+// ANTLR tool (not just runtime) into the published POM. Disconnect it.
+configurations.api.setExtendsFrom(
+    configurations.api.extendsFrom.findAll { it.name != 'antlr' }
+)

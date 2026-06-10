@@ -1,0 +1,102 @@
+// Common configuration for formatter subprojects (jacet-core, jacet-cli)
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.21.2'
+    id 'com.vanniktech.maven.publish' version '0.36.0' apply false
+}
+
+scmVersion {
+    tag {
+        prefix = 'v'
+    }
+    repository {
+        directory = file('..').absolutePath
+    }
+}
+
+allprojects {
+    group = 'de.irotation.jacet'
+    version = scmVersion.version
+}
+
+subprojects {
+    // Plain `java`, not `java-library`: the GraalVM native-build-tools plugin switches any
+    // project that has `java-library` applied to shared-library output, so jacet-cli would
+    // build jacet.dll/.so instead of an executable. jacet-core applies `java-library` itself.
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.jspecify:jspecify:1.0.0'
+
+        testImplementation platform('org.junit:junit-bom:6.1.0')
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+}
+
+// The `gradle.parent == null` guard restricts publishing setup to when formatter is the
+// top-level build. When buildtools includeBuilds this build to consume jacet-core, applying
+// the maven-publish plugin would register a build-scoped MavenCentralBuildService that the
+// outer build's configuration cache cannot serialize — the service class is absent from the
+// consumer's classpath — failing `./gradlew -p buildtools build` in CI. With the guard the
+// jacet-core list is empty under an included build, so the plugin is never applied there;
+// standalone `-p formatter` publishing is unaffected.
+configure(subprojects.findAll { it.name == 'jacet-core' && gradle.parent == null }) {
+    apply plugin: 'com.vanniktech.maven.publish'
+    apply plugin: 'signing'
+
+    // In-memory GPG signing: vanniktech reads the signingInMemoryKey* Gradle
+    // properties, supplied in CI via ORG_GRADLE_PROJECT_* env vars. Only sign when a
+    // key is present, so local publishToMavenLocal works without GPG.
+    final boolean shouldSign = project.hasProperty('signingInMemoryKey')
+
+    mavenPublishing {
+        publishToMavenCentral()
+        if (shouldSign) {
+            signAllPublications()
+        }
+
+        pom {
+            name = 'Jacet Core'
+            description = 'Prettier-style Java code formatter — core engine.'
+            inceptionYear = '2026'
+            url = 'https://github.com/lneumeier/jacet'
+
+            licenses {
+                license {
+                    name = 'MIT License'
+                    url = 'https://opensource.org/licenses/MIT'
+                    distribution = 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id = 'lneumeier'
+                    name = 'Lars Neumeier'
+                    email = 'lneumeier@irotation.de'
+                }
+            }
+
+            scm {
+                connection = 'scm:git:git://github.com/lneumeier/jacet.git'
+                developerConnection = 'scm:git:ssh://github.com/lneumeier/jacet.git'
+                url = 'https://github.com/lneumeier/jacet'
+            }
+        }
+    }
+}

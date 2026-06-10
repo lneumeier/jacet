@@ -1,0 +1,70 @@
+name: Feature request or formatting change
+description: Propose new behavior, a change to existing formatting, or a new CLI option
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before filing:** please skim [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md).
+        jacet is opinionated in the Prettier tradition — configurability is
+        explicitly *not* a goal, and many "make X configurable" requests are
+        declined on principle. Open this issue to discuss **before** writing
+        code, so we can save each other review cycles.
+
+  - type: checkboxes
+    id: read-contributing
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have read CONTRIBUTING.md and understand the "discuss first" policy
+          required: true
+        - label: I have searched existing issues and this is not a duplicate
+          required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - Change to existing formatting output
+        - New formatting behavior (no current rule covers this)
+        - New CLI option or flag
+        - New integration (IDE, build tool, etc.)
+        - Something else (explain below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What does jacet do today? Paste an input + current output if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired behavior
+      description: What should jacet do instead? Be specific — ideally with the same input and the output you'd like to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: |
+        What problem does this solve? "It would be nice if" is not enough — explain
+        the concrete pain point. If the request is "make X configurable", please
+        argue why a single opinionated default can't serve your case.
+    validations:
+      required: true
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Prior art
+      description: How do Prettier, google-java-format, Spotless, or the JDK style guide handle this? Links welcome.
+    validations:
+      required: false

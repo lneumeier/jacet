@@ -1,0 +1,15 @@
+plugins {
+    // Auto-provisions the JDK required by the toolchain (Java 25) when it is not installed locally.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'jacet-formatter'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+include 'jacet-core'
+include 'jacet-cli'

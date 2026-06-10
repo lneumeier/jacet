@@ -1,0 +1,43 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '2.1.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+dependencies {
+    implementation "de.irotation.jacet:jacet-core:${project.version}"
+    compileOnly 'org.jspecify:jspecify:1.0.0'
+
+    testImplementation platform('org.junit:junit-bom:6.1.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation gradleTestKit()
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+gradlePlugin {
+    website = 'https://github.com/lneumeier/jacet'
+    vcsUrl = 'https://github.com/lneumeier/jacet'
+
+    plugins {
+        jacet {
+            id = 'de.irotation.jacet'
+            displayName = 'Jacet Java Formatter'
+            description = 'Formats Java source files using the Wadler-Lindig pretty-printing algorithm, in the style of Prettier.'
+            tags.set(['formatting', 'java', 'prettier', 'code-style'])
+            implementationClass = 'de.irotation.jacet.gradle.JacetPlugin'
+        }
+    }
+}

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/lneumeier/jacet/blob/main/CONTRIBUTING.md
+    about: How to build, test, and contribute. Read this before filing a feature request.
+  - name: Security vulnerability
+    url: https://github.com/lneumeier/jacet/security/advisories/new
+    about: Report security issues privately — do not use public issues.

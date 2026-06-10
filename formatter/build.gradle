@@ -88,7 +88,7 @@ configure(subprojects.findAll { it.name == 'jacet-core' && gradle.parent == null
                 developer {
                     id = 'lneumeier'
                     name = 'Lars Neumeier'
-                    email = 'lneumeier@irotation.de'
+                    email = 'jacet@irotation.de'
                 }
             }
 

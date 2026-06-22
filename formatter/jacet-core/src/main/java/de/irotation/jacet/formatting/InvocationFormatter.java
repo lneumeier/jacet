@@ -252,6 +252,10 @@ final class InvocationFormatter implements HandlerProvider {
    * detected here with {@link Document#willBreak} and turned into a hardLine separator — the same visual result as prettier's breakParent.
    * Each segment's suffix and comments are printed exactly once; {@code dispatch.visit} consumes comments from the hidden channel, so visiting
    * a segment twice would drop or double-emit them.
+   *
+   * <p>When the receiver carries a trailing line comment (rendered as a LineSuffix, so {@code willBreak} is true) the chain breaks before
+   * every segment's dot regardless of the cutoff, so the comment stays on the receiver's line; otherwise it would be flushed onto the line of
+   * an opening bracket and re-home on the next format pass, breaking idempotence.
    */
   private Document formatChain(final JavaParser.MemberReferenceExpressionContext top) {
     final List<JavaParser.MemberReferenceExpressionContext> segments = new ArrayList<>();
@@ -261,6 +265,14 @@ final class InvocationFormatter implements HandlerProvider {
       cur = mre.expression();
     }
     final Document receiver = dispatch.visit(cur);
+    if (dispatch.hasTrailing(cur) && willBreak(receiver)) {
+      final List<Document> tail = new ArrayList<>();
+      for (final JavaParser.MemberReferenceExpressionContext segment : segments) {
+        tail.add(hardLine());
+        tail.add(this.printChainSegment(segment));
+      }
+      return new Group(concat(receiver, breakIndent(concat(tail))), true);
+    }
     if (segments.size() < 2) {
       return concat(receiver, Tokens.sourced(segments.getFirst().bop), this.memberSuffix(segments.getFirst()));
     }

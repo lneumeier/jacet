@@ -143,10 +143,30 @@ public final class DocumentVisitor extends JavaParserBaseVisitor<Document> imple
   public Document visitChildren(final RuleNode node) {
     if (node instanceof final ParserRuleContext ruleContext) {
       final Function<ParserRuleContext, Document> handler = handlers.get(ruleContext.getClass());
-      if (handler != null) {
-        return handler.apply(ruleContext);
-      }
+      final Document result = handler != null ? handler.apply(ruleContext) : super.visitChildren(node);
+      return appendImmediateTrailing(ruleContext, result);
     }
     return super.visitChildren(node);
+  }
+
+  /**
+   * Safety net for a comment {@link CommentAttacher} attaches as a node's trailing comment that no delegate
+   * formatter renders — a comment sitting mid-expression directly after an operand (before a {@code )}, before a
+   * {@code .} in a method chain, before a binary operator). Without this the comment is silently dropped and
+   * {@code CoverageVerifier} skips the whole file. Restricted to comments <em>immediately</em> following the node
+   * (see {@link CommentHelper#renderTrailingImmediate}) so it never steals a comment a delegate renders via the
+   * token-index API at its own position. A trailing line comment renders as a {@code LineSuffix}, which
+   * {@code willBreak} treats as a forced break, so an enclosing group that consults it keeps the comment's line.
+   */
+  private Document appendImmediateTrailing(final ParserRuleContext context, final Document result) {
+    final NodeComments attached = commentAttachment.get(context);
+    if (attached == null || attached.trailing().isEmpty() || context.getStop() == null) {
+      return result;
+    }
+    final Document trailing = commentHelper.renderTrailingImmediate(attached, context.getStop().getTokenIndex());
+    if (Document.EMPTY.equals(trailing)) {
+      return result;
+    }
+    return concat(result, trailing);
   }
 }

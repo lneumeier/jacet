@@ -41,6 +41,13 @@ final class ControlFlowFormatter implements HandlerProvider {
     return dispatch.visit(statement);
   }
 
+  /**
+   * Formats an {@code if}/{@code else}. A comment between the then-branch and the {@code else} keyword
+   * ({@code } else // c}) attaches as the then-statement's trailing comment but sits after {@code else}, so the
+   * visitor's immediate-trailing safety net skips it and it is rendered here. For a line comment (a breaking
+   * LineSuffix) the else-branch breaks onto its own line so the comment keeps its line and the layout reparses
+   * identically (idempotence) instead of flushing past the branch's opening brace.
+   */
   Document visitIfStatement(final JavaParser.StatementContext statementContext) {
     final List<Document> parts = new ArrayList<>();
     parts.add(
@@ -57,7 +64,9 @@ final class ControlFlowFormatter implements HandlerProvider {
     if (statementContext.ELSE() != null) {
       parts.add(text(" "));
       parts.add(Tokens.sourced(statementContext.ELSE()));
-      parts.add(text(" "));
+      final Document elseComment = dispatch.trailing(statementContext.statement(0));
+      parts.add(elseComment);
+      parts.add(willBreak(elseComment) ? hardLine() : text(" "));
       final JavaParser.StatementContext elseStmt = statementContext.statement(1);
       if (elseStmt.IF() != null) {
         parts.add(dispatch.visit(elseStmt));

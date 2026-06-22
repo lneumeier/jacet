@@ -213,9 +213,16 @@ final class OperatorFormatter implements HandlerProvider {
     return new Group(indent(concat(first, concat(rest))), anyOperandBreaks);
   }
 
+  /**
+   * Flattens a same-operator, left-associative chain ({@code a + b + c}) into operand/operator segments. Because the
+   * nested left binary is flattened by recursion rather than visited, a comment attached as that sub-chain's trailing
+   * (e.g. {@code a + b // c} before the next {@code +}) is never reached by the visitor's immediate-trailing safety
+   * net, so it is rendered here to avoid dropping it.
+   */
   private void collectBinaryOpChain(final ParseTree node, final String op, final List<Document> out) {
     if (node instanceof final JavaParser.BinaryOperatorExpressionContext bin && Operators.binaryOpText(bin).equals(op)) {
       this.collectBinaryOpChain(bin.expression(0), op, out);
+      out.add(dispatch.trailing(bin.expression(0)));
       out.add(text(" "));
       out.add(Operators.binaryOpDoc(bin));
       if (binaryOpLastToken(bin) instanceof final TerminalNode opNode) {

@@ -209,21 +209,57 @@ public final class CommentHelper {
   public Document renderTrailing(final NodeComments nodeComments) {
     final List<Document> parts = new ArrayList<>();
     for (final Comment comment : nodeComments.trailing()) {
-      if (printedIndices.contains(comment.tokenIndex())) {
-        continue;
-      }
-      if (comment.isLineComment()) {
-        parts.add(lineSuffix(concat(text(" "), text(comment.text().trim()))));
-      } else {
-        parts.add(text(" "));
-        parts.add(renderCommentBody(comment));
-      }
-      printedIndices.add(comment.tokenIndex());
+      this.appendTrailing(parts, comment);
     }
     if (parts.isEmpty()) {
       return empty();
     }
     return concat(parts);
+  }
+
+  /**
+   * Like {@link #renderTrailing} but only for trailing comments that <em>immediately</em> follow the token at
+   * {@code stopTokenIndex} — with no intervening real (default-channel) token. This is the visitor's safety net
+   * for comments {@link CommentAttacher} attaches as a node's trailing comment that no delegate renders: a
+   * comment sitting mid-expression directly after an operand (before a {@code )}, a {@code .} in a method chain,
+   * or a binary operator). A comment separated from the node by a real token — after the {@code ->} of a lambda,
+   * after a comma — is left untouched so the delegate that owns that token renders it at its curated position;
+   * the net never steals a comment that something else will print.
+   */
+  public Document renderTrailingImmediate(final NodeComments nodeComments, final int stopTokenIndex) {
+    final List<Document> parts = new ArrayList<>();
+    for (final Comment comment : nodeComments.trailing()) {
+      if (this.hasRealTokenBetween(stopTokenIndex, comment.tokenIndex())) {
+        continue;
+      }
+      this.appendTrailing(parts, comment);
+    }
+    if (parts.isEmpty()) {
+      return empty();
+    }
+    return concat(parts);
+  }
+
+  private void appendTrailing(final List<Document> parts, final Comment comment) {
+    if (printedIndices.contains(comment.tokenIndex())) {
+      return;
+    }
+    if (comment.isLineComment()) {
+      parts.add(lineSuffix(concat(text(" "), text(comment.text().trim()))));
+    } else {
+      parts.add(text(" "));
+      parts.add(renderCommentBody(comment));
+    }
+    printedIndices.add(comment.tokenIndex());
+  }
+
+  private boolean hasRealTokenBetween(final int fromExclusive, final int toExclusive) {
+    for (int i = fromExclusive + 1; i < toExclusive; i++) {
+      if (tokens.get(i).getChannel() == Token.DEFAULT_CHANNEL) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

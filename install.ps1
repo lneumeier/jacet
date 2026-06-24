@@ -60,9 +60,18 @@ try {
   }
 
   try {
-    $checksumLine = (Invoke-WebRequest -Uri "$base/$asset.sha256" -UseBasicParsing -Headers $Headers).Content
+    $checksumContent = (Invoke-WebRequest -Uri "$base/$asset.sha256" -UseBasicParsing -Headers $Headers).Content
   } catch {
     throw "Failed to fetch checksum: $base/$asset.sha256`n$($_.Exception.Message)"
+  }
+
+  # Depending on the served Content-Type, Invoke-WebRequest exposes .Content as a
+  # Byte[] rather than a string. Decode bytes as UTF-8 before parsing, otherwise the
+  # -split / checksum comparison runs against a byte array and always mismatches.
+  $checksumLine = if ($checksumContent -is [byte[]]) {
+    [System.Text.Encoding]::UTF8.GetString($checksumContent)
+  } else {
+    $checksumContent
   }
 
   $expected = ($checksumLine -split '\s+')[0].ToLower()

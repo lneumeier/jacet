@@ -65,10 +65,13 @@ final class CreatorFormatter implements HandlerProvider {
     return concat(parts);
   }
 
+  /**
+   * Formats the created type name. Type annotations may precede the first segment ({@code new @Nullable Foo()}), a qualified segment
+   * ({@code new Outer.@Nullable Inner()}), or the primitive element type of an array creator ({@code new @NonNull int[3]}); each annotation
+   * is followed by a space so it does not fuse with the next segment. The primitive alternative is folded into the same child loop rather
+   * than short-circuited, because a short-circuit on {@code primitiveType()} would drop its leading annotations.
+   */
   Document visitCreatedName(final JavaParser.CreatedNameContext nameContext) {
-    if (nameContext.primitiveType() != null) {
-      return dispatch.visit(nameContext.primitiveType());
-    }
     final List<Document> parts = new ArrayList<>();
     for (int i = 0; i < nameContext.getChildCount(); i++) {
       final ParseTree child = nameContext.getChild(i);
@@ -76,6 +79,9 @@ final class CreatorFormatter implements HandlerProvider {
         parts.add(Tokens.sourced(terminal));
       } else {
         parts.add(dispatch.visit(child));
+        if (child instanceof JavaParser.AnnotationContext) {
+          parts.add(text(" "));
+        }
       }
     }
     return concat(parts);

@@ -263,6 +263,39 @@ class AnnotatedClass {
   private String @Nullable [] nullableArray;
   private @Nullable String[] arrayOfNullables;
   private @Nullable String @NonNull [] bothAnnotated;
+
+  // Qualified type-use annotations: the annotation sits between the qualifier dot
+  // and the inner type name — "Outer.@Nullable Inner" must keep its space.
+  private Outer.@Nullable Inner qualifiedInner;
+  private Outer.Middle.@Nullable Inner deeplyQualifiedInner;
+  private Outer.@Nullable @NonNull Inner multiAnnotatedInner;
+
+  Outer.@Nullable Inner qualifiedAnnotatedParameter(final Outer.@Nullable Inner parameterName) {
+    return parameterName;
+  }
+}
+
+// type-parameter-bound-annotation: annotations on a type-parameter bound must stay
+// on the bound — "<T extends @Nullable Foo>" must not become "<@Nullable T extends Foo>".
+class TypeParameterBounds<T extends @Nullable Comparable<T>> {
+  <@NonNull U extends @Nullable Foo> U pick(final U value) {
+    return value;
+  }
+}
+
+// creator-annotation: type-use annotations in object and array creation expressions
+class CreatorAnnotations {
+  Object direct() {
+    return new @Nullable Foo();
+  }
+
+  Object qualifiedInner() {
+    return new Outer.@Nullable Inner();
+  }
+
+  Object annotatedPrimitiveArray() {
+    return new @NonNull int[3];
+  }
 }
 
 // cast-annotation: annotations inside cast expressions within methods

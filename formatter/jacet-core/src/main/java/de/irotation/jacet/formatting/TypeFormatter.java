@@ -112,6 +112,11 @@ final class TypeFormatter implements HandlerProvider {
     return dispatch.visit(typeContext.classType());
   }
 
+  /**
+   * Formats a possibly qualified class type. Type annotations may appear between a qualifier dot and the following type identifier
+   * ({@code Outer.@Nullable Inner}); each annotation is followed by a space so the annotation does not fuse with the next segment. Per the
+   * grammar an annotation child is never last — a type identifier always follows — so the space never trails.
+   */
   Document visitClassType(final JavaParser.ClassTypeContext typeContext) {
     final List<Document> parts = new ArrayList<>();
     for (int i = 0; i < typeContext.getChildCount(); i++) {
@@ -120,6 +125,9 @@ final class TypeFormatter implements HandlerProvider {
         parts.add(Tokens.sourced(terminal));
       } else {
         parts.add(dispatch.visit(child));
+        if (child instanceof JavaParser.AnnotationContext) {
+          parts.add(text(" "));
+        }
       }
     }
     return concat(parts);
@@ -141,18 +149,24 @@ final class TypeFormatter implements HandlerProvider {
     );
   }
 
+  /**
+   * Formats a type parameter. Annotations may appear both before the identifier and after {@code extends}, on the bound
+   * ({@code <@NonNull T extends @Nullable Foo>}); children are iterated in source order so a bound annotation stays on the bound instead of
+   * being hoisted in front of the identifier — a move the coverage guarantee cannot catch, since the tokens are still emitted exactly once.
+   * All children (annotations, identifier, {@code extends}, bound) are separated by single spaces.
+   */
   Document visitTypeParameter(final JavaParser.TypeParameterContext typeContext) {
     final List<Document> parts = new ArrayList<>();
-    for (final JavaParser.AnnotationContext annotation : typeContext.annotation()) {
-      parts.add(dispatch.visit(annotation));
-      parts.add(text(" "));
-    }
-    parts.add(dispatch.visit(typeContext.identifier()));
-    if (typeContext.typeBound() != null) {
-      parts.add(text(" "));
-      parts.add(Tokens.sourced(typeContext.EXTENDS()));
-      parts.add(text(" "));
-      parts.add(dispatch.visit(typeContext.typeBound()));
+    for (int i = 0; i < typeContext.getChildCount(); i++) {
+      final ParseTree child = typeContext.getChild(i);
+      if (i > 0) {
+        parts.add(text(" "));
+      }
+      if (child instanceof final TerminalNode terminal) {
+        parts.add(Tokens.sourced(terminal));
+      } else {
+        parts.add(dispatch.visit(child));
+      }
     }
     return concat(parts);
   }

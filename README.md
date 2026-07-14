@@ -15,7 +15,7 @@ The install scripts pick the right native binary for your platform, verify its S
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash
 # or pin a version:
-curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.1.0
+curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.3.0
 ```
 
 **Windows (PowerShell):**
@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | b
 ```powershell
 irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1 | iex
 # or pin a version:
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1))) v0.1.0
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1))) v0.3.0
 ```
 
 ### Manual binary download
@@ -48,7 +48,7 @@ sudo mv jacet-* /usr/local/bin/jacet
 
 ```groovy
 plugins {
-    id 'de.irotation.jacet' version '0.1.0'
+    id 'de.irotation.jacet' version '0.3.0'
 }
 ```
 
@@ -87,7 +87,7 @@ All CLI options:
 --end-of-line MODE      lf, crlf, cr, auto (default: lf)
 --[no-]force-braces     Add braces to single-statement blocks (default: on)
 --static-imports POS    top, bottom, mixed (default: top)
---import-groups LIST    Comma-separated prefixes (default: java,javax,jakarta,org,com,de)
+--import-groups LIST    Comma-separated prefixes (default: java,javax,jakarta,org,com,de,lombok)
 --config PATH           Path to .jacet.json
 --no-config             Ignore config files
 ```
@@ -121,7 +121,7 @@ jacet {
     forceBraces = true
     endOfLine = "lf"                         // lf, crlf, cr, auto
     staticImports = "top"                    // top, bottom, mixed
-    importGroups = ["java", "javax", "jakarta", "org", "com", "de"]
+    importGroups = ["java", "javax", "jakarta", "org", "com", "de", "lombok"]
 }
 ```
 
@@ -148,7 +148,7 @@ Jacet looks for a `.jacet.json` file, walking up from the target directory and s
   "endOfLine": "lf",
   "imports": {
     "staticPosition": "top",
-    "groups": ["java", "javax", "jakarta", "org", "com", "de"]
+    "groups": ["java", "javax", "jakarta", "org", "com", "de", "lombok"]
   }
 }
 ```
@@ -161,7 +161,7 @@ Jacet looks for a `.jacet.json` file, walking up from the target directory and s
 | `forceBraces`      | `true`                               | Wrap single-statement bodies in `{}`              |
 | `endOfLine`        | `"lf"`                               | Line endings: `lf`, `crlf`, `cr`, `auto`          |
 | `imports.staticPosition` | `"top"`                        | Where static imports go: `top`, `bottom`, `mixed` |
-| `imports.groups`   | `["java","javax","jakarta","org","com","de"]` | Import grouping prefixes (blank line between groups) |
+| `imports.groups`   | `["java","javax","jakarta","org","com","de", "lombok"]` | Import grouping prefixes (blank line between groups) |
 
 All options are optional — omitted values use defaults. CLI flags override config file values.
 

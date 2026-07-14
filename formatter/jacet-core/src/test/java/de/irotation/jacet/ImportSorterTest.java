@@ -129,9 +129,25 @@ class ImportSorterTest {
 
     final var result = ImportSorter.sort(imports, DEFAULT_OPTIONS, EOL);
 
-    // de is the last configured group; unmatched imports trail it
+    // unmatched imports trail every configured group
     assertTrue(result.indexOf("de.irotation") < result.indexOf("io.vavr"));
     assertTrue(result.contains(";\n\nimport io.vavr"));
+  }
+
+  @Test
+  void lombokGroupSortsAfterDeBeforeOther() {
+    final var imports = List.of(
+      new ImportSorter.ImportStatement("io.vavr.control.Try", false),
+      new ImportSorter.ImportStatement("lombok.Getter", false),
+      new ImportSorter.ImportStatement("de.irotation.myapp.MyClass", false)
+    );
+
+    final var result = ImportSorter.sort(imports, DEFAULT_OPTIONS, EOL);
+
+    // lombok is the last configured group; unmatched imports trail it
+    assertTrue(result.indexOf("de.irotation") < result.indexOf("lombok.Getter"));
+    assertTrue(result.indexOf("lombok.Getter") < result.indexOf("io.vavr"));
+    assertTrue(result.contains("lombok.Getter;\n\nimport io.vavr"));
   }
 
   @Test

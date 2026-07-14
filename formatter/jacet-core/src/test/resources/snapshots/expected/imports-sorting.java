@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import de.example.util.Helper;
 import de.irotation.jacet.FormatResult;
 
+import lombok.Getter;
+
 import picocli.CommandLine;
 
 @Service

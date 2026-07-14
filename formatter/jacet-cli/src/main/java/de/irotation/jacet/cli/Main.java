@@ -92,7 +92,7 @@ public final class Main implements Callable<Integer> {
   @Nullable
   @Option(
     names = "--import-groups",
-    description = "Comma-separated import group prefixes (default: from config or java,javax,jakarta,org,com,de)."
+    description = "Comma-separated import group prefixes (default: from config or java,javax,jakarta,org,com,de,lombok)."
   )
   String importGroups;
 

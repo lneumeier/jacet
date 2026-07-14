@@ -12,12 +12,20 @@ public record ImportOptions(StaticPosition staticPosition, List<Group> groups) {
 
   /**
    * Default rules: static imports at the top, groups ordered {@code java}, {@code javax}, {@code jakarta}, {@code org}, {@code com},
-   * {@code de}.
+   * {@code de}, {@code lombok}.
    */
   public static ImportOptions defaults() {
     return new ImportOptions(
       StaticPosition.TOP,
-      List.of(new Group("java"), new Group("javax"), new Group("jakarta"), new Group("org"), new Group("com"), new Group("de"))
+      List.of(
+        new Group("java"),
+        new Group("javax"),
+        new Group("jakarta"),
+        new Group("org"),
+        new Group("com"),
+        new Group("de"),
+        new Group("lombok")
+      )
     );
   }
 

@@ -32,7 +32,7 @@ import de.irotation.jacet.ImportOptions;
  *   forceBraces = true                                        // brace single-statement bodies, default true
  *   endOfLine = "lf"                                          // one of: lf, crlf, cr, auto; default lf
  *   staticImports = "top"                                     // one of: top, bottom, mixed; default top
- *   importGroups = ["java", "javax", "jakarta", "org", "com", "de"] // ordered group prefixes
+ *   importGroups = ["java", "javax", "jakarta", "org", "com", "de", "lombok"] // ordered group prefixes
  * }
  * </pre>
  */

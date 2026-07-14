@@ -152,7 +152,7 @@ jacet-specific architectural rules that go beyond pure code style.
 ## Configuration
 
 `FormatterOptions` record: `printWidth` (140), `tabWidth` (2), `useTabs` (false), `forceBraces` (true), `endOfLine` (LF), `imports` (groups:
-java, javax, jakarta, org, com, de; static: TOP).
+java, javax, jakarta, org, com, de, lombok; static: TOP).
 
 Config file: `.jacet.json`, lookup walks up from the project dir and stops at the repository root (the first directory containing a
 `.git` entry — directory or file); outside a repository it walks to the filesystem root. There is no home-directory fallback: nothing

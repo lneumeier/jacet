@@ -1,6 +1,7 @@
 package com.example;
 
 import picocli.CommandLine;
+import lombok.Getter;
 import de.irotation.jacet.FormatResult;
 import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;

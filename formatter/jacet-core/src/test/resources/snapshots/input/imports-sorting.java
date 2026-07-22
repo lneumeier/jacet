@@ -10,5 +10,12 @@ import java.util.List;
 
 @Service
 public class ImportDemo {
+
+  @Getter
   private List<String> items;
+
+  private CommandLine commandLine;
+  private FormatResult formatResult;
+  private ImmutableList<String> immutable;
+  private Helper helper;
 }

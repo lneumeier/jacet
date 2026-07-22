@@ -128,6 +128,11 @@ public abstract class AbstractJacetTask extends DefaultTask {
     return this.resolvedOptions().map(o -> o.imports().groups().stream().map(ImportOptions.Group::prefix).toList());
   }
 
+  @Input
+  public Provider<Boolean> getRemoveUnusedImports() {
+    return this.resolvedOptions().map(o -> o.imports().removeUnused());
+  }
+
   /** Logs each parse error against the file as a warning; the file is then skipped, leaving its source untouched. */
   final void warnParseErrors(final File file, final FormatResult result) {
     for (final String error : result.parseErrors()) {

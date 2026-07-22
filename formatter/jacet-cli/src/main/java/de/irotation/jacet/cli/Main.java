@@ -96,6 +96,13 @@ public final class Main implements Callable<Integer> {
   )
   String importGroups;
 
+  @Option(
+    names = "--remove-unused-imports",
+    negatable = true,
+    description = "Remove imports whose name is never referenced; wildcard imports are kept (--no-remove-unused-imports to disable)."
+  )
+  boolean removeUnusedImports;
+
   @Nullable
   @Option(names = "--config", description = "Path to .jacet.json config file.")
   Path configFile;
@@ -299,6 +306,7 @@ public final class Main implements Callable<Integer> {
       endOfLine,
       staticImports,
       importGroups,
+      this.triState(removeUnusedImports, "--remove-unused-imports"),
       configFile,
       noConfig
     );

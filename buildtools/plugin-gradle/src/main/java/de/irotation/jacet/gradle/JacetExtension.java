@@ -33,6 +33,7 @@ import de.irotation.jacet.ImportOptions;
  *   endOfLine = "lf"                                          // one of: lf, crlf, cr, auto; default lf
  *   staticImports = "top"                                     // one of: top, bottom, mixed; default top
  *   importGroups = ["java", "javax", "jakarta", "org", "com", "de", "lombok"] // ordered group prefixes
+ *   removeUnusedImports = true                                // drop imports never referenced; default true
  * }
  * </pre>
  */
@@ -53,6 +54,8 @@ public abstract class JacetExtension {
   public abstract Property<String> getStaticImports();
 
   public abstract ListProperty<String> getImportGroups();
+
+  public abstract Property<Boolean> getRemoveUnusedImports();
 
   /**
    * Layer the DSL properties over {@code base}: each property that was set in the {@code jacet { }} block wins,
@@ -95,6 +98,15 @@ public abstract class JacetExtension {
       groups = base.imports().groups();
     }
 
-    return new FormatterOptions(printWidth, tabWidth, useTabs, forceBraces, endOfLine, new ImportOptions(staticPosition, groups));
+    final boolean removeUnused = this.getRemoveUnusedImports().getOrElse(base.imports().removeUnused());
+
+    return new FormatterOptions(
+      printWidth,
+      tabWidth,
+      useTabs,
+      forceBraces,
+      endOfLine,
+      new ImportOptions(staticPosition, groups, removeUnused)
+    );
   }
 }

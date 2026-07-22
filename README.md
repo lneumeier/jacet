@@ -14,7 +14,9 @@ The install scripts pick the right native binary for your platform, verify its S
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash
-# or pin a version:
+```
+To pin a version:
+```bash
 curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.3.0
 ```
 
@@ -22,7 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | b
 
 ```powershell
 irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1 | iex
-# or pin a version:
+```
+To pin a version:
+```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1))) v0.3.0
 ```
 
@@ -76,20 +80,21 @@ jacet --write --print-width 100 --tab-width 4 src/
 All CLI options:
 
 ```
---write                 Edit files in-place (the default)
---check                 Check formatting without writing
---staged                Format git-staged files and re-stage them (for pre-commit hooks)
---changed               Format files changed in the working tree (modified + untracked), in place
---stdin-filepath PATH   Format stdin, use PATH for config lookup
---print-width N         Line width (default: 140)
---tab-width N           Indentation width (default: 2)
---[no-]use-tabs         Indent with tabs instead of spaces
---end-of-line MODE      lf, crlf, cr, auto (default: lf)
---[no-]force-braces     Add braces to single-statement blocks (default: on)
---static-imports POS    top, bottom, mixed (default: top)
---import-groups LIST    Comma-separated prefixes (default: java,javax,jakarta,org,com,de,lombok)
---config PATH           Path to .jacet.json
---no-config             Ignore config files
+--write                       Edit files in-place (the default)
+--check                       Check formatting without writing
+--staged                      Format git-staged files and re-stage them (for pre-commit hooks)
+--changed                     Format files changed in the working tree (modified + untracked), in place
+--stdin-filepath PATH         Format stdin, use PATH for config lookup
+--print-width N               Line width (default: 140)
+--tab-width N                 Indentation width (default: 2)
+--[no-]use-tabs               Indent with tabs instead of spaces
+--end-of-line MODE            lf, crlf, cr, auto (default: lf)
+--[no-]force-braces           Add braces to single-statement blocks (default: on)
+--static-imports POS          top, bottom, mixed (default: top)
+--import-groups LIST          Comma-separated prefixes (default: java,javax,jakarta,org,com,de,lombok)
+--[no-]remove-unused-imports  Remove imports never referenced in code or javadoc tags (default: on)
+--config PATH                 Path to .jacet.json
+--no-config                   Ignore config files
 ```
 
 ### Git pre-commit hook
@@ -122,6 +127,7 @@ jacet {
     endOfLine = "lf"                         // lf, crlf, cr, auto
     staticImports = "top"                    // top, bottom, mixed
     importGroups = ["java", "javax", "jakarta", "org", "com", "de", "lombok"]
+    removeUnusedImports = true               // drop imports never referenced
 }
 ```
 
@@ -148,7 +154,8 @@ Jacet looks for a `.jacet.json` file, walking up from the target directory and s
   "endOfLine": "lf",
   "imports": {
     "staticPosition": "top",
-    "groups": ["java", "javax", "jakarta", "org", "com", "de", "lombok"]
+    "groups": ["java", "javax", "jakarta", "org", "com", "de", "lombok"],
+    "removeUnused": true
   }
 }
 ```
@@ -162,15 +169,18 @@ Jacet looks for a `.jacet.json` file, walking up from the target directory and s
 | `endOfLine`        | `"lf"`                               | Line endings: `lf`, `crlf`, `cr`, `auto`          |
 | `imports.staticPosition` | `"top"`                        | Where static imports go: `top`, `bottom`, `mixed` |
 | `imports.groups`   | `["java","javax","jakarta","org","com","de", "lombok"]` | Import grouping prefixes (blank line between groups) |
+| `imports.removeUnused` | `true`                           | Remove imports never referenced in code or javadoc tags; wildcard imports are always kept |
 
 All options are optional — omitted values use defaults. CLI flags override config file values.
+
+`removeUnused` detection is token-based (like Spotless / google-java-format): an import survives when its simple name appears as an identifier anywhere outside the import declarations or inside a javadoc reference tag (`{@link}`, `{@linkplain}`, `{@value}`, `@see`, `@throws`). Detection errs toward keeping — fully-qualified usage, usage inside `@formatter:off` regions, and overloaded static members all keep their imports; plain comment prose does not.
 
 ## Predictable output
 
 Jacet parses your source with a full ANTLR4 Java grammar and re-prints it with a Wadler-Lindig pretty-printer. Three mechanisms keep the output predictable:
 
 - **Parse errors return the source unchanged** — Jacet never emits a best-effort guess.
-- **Token coverage is verified on every run**: if the formatted output would drop or duplicate any input token, the file is returned unchanged and reported as a verification error instead. There is no opt-out.
+- **Token coverage is verified on every run**: if the formatted output would drop or duplicate any input token, the file is returned unchanged and reported as a verification error instead. There is no opt-out. The one deliberate exception: unused-import removal (`removeUnused`, on by default) drops unused imports after this check has passed.
 - **Formatting is idempotent**: `format(format(x)) == format(x)` — running Jacet twice never produces a different result than running it once.
 
 Regions between a comment containing `@formatter:off` and the matching `@formatter:on` are preserved verbatim.

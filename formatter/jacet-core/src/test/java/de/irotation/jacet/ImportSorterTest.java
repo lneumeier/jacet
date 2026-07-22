@@ -47,7 +47,7 @@ class ImportSorterTest {
 
   @Test
   void staticImportsAtBottom() {
-    final var options = new ImportOptions(ImportOptions.StaticPosition.BOTTOM, DEFAULT_OPTIONS.groups());
+    final var options = new ImportOptions(ImportOptions.StaticPosition.BOTTOM, DEFAULT_OPTIONS.groups(), false);
 
     final var imports = List.of(
       new ImportSorter.ImportStatement("java.util.List", false),
@@ -61,7 +61,7 @@ class ImportSorterTest {
 
   @Test
   void staticImportsAtTop() {
-    final var options = new ImportOptions(ImportOptions.StaticPosition.TOP, DEFAULT_OPTIONS.groups());
+    final var options = new ImportOptions(ImportOptions.StaticPosition.TOP, DEFAULT_OPTIONS.groups(), false);
 
     final var imports = List.of(
       new ImportSorter.ImportStatement("java.util.List", false),
@@ -75,7 +75,7 @@ class ImportSorterTest {
 
   @Test
   void staticImportsMixed() {
-    final var options = new ImportOptions(ImportOptions.StaticPosition.MIXED, DEFAULT_OPTIONS.groups());
+    final var options = new ImportOptions(ImportOptions.StaticPosition.MIXED, DEFAULT_OPTIONS.groups(), false);
 
     final var imports = List.of(
       new ImportSorter.ImportStatement("java.util.List", false),
@@ -251,7 +251,8 @@ class ImportSorterTest {
         new ImportOptions.Group("org"),
         new ImportOptions.Group("com"),
         new ImportOptions.Group("java")
-      )
+      ),
+      false
     );
 
     final var imports = List.of(

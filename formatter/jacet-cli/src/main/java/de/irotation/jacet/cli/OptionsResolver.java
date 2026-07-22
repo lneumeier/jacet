@@ -27,6 +27,7 @@ final class OptionsResolver {
   private final @Nullable String endOfLine;
   private final @Nullable String staticImports;
   private final @Nullable String importGroups;
+  private final @Nullable Boolean removeUnusedImports;
   private final @Nullable Path configFile;
   private final boolean noConfig;
 
@@ -38,6 +39,7 @@ final class OptionsResolver {
     final @Nullable String endOfLine,
     final @Nullable String staticImports,
     final @Nullable String importGroups,
+    final @Nullable Boolean removeUnusedImports,
     final @Nullable Path configFile,
     final boolean noConfig
   ) {
@@ -48,6 +50,7 @@ final class OptionsResolver {
     this.endOfLine = endOfLine;
     this.staticImports = staticImports;
     this.importGroups = importGroups;
+    this.removeUnusedImports = removeUnusedImports;
     this.configFile = configFile;
     this.noConfig = noConfig;
   }
@@ -94,7 +97,8 @@ final class OptionsResolver {
   private ImportOptions buildImportOptions(final ImportOptions base) {
     final ImportOptions.StaticPosition position = parseStaticPosition(this.staticImports, base.staticPosition());
     final List<ImportOptions.Group> groups = parseImportGroups(this.importGroups, base.groups());
-    return new ImportOptions(position, groups);
+    final boolean removeUnused = this.removeUnusedImports != null ? this.removeUnusedImports : base.removeUnused();
+    return new ImportOptions(position, groups, removeUnused);
   }
 
   private static ImportOptions.StaticPosition parseStaticPosition(

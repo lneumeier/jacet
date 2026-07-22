@@ -280,6 +280,52 @@ class MainTest {
   }
 
   @Test
+  void removesUnusedImportsByDefault() throws Exception {
+    final var file = tempDir.resolve("Unused.java");
+    Files.writeString(file, "import java.util.Map;\n\npublic class Unused {}\n");
+
+    final var result = this.run("--write", file.toString());
+
+    assertEquals(0, result.exitCode());
+    assertFalse(Files.readString(file).contains("import java.util.Map;"), "unused import must be removed by default");
+  }
+
+  @Test
+  void configFileDisablesRemoveUnusedImports() throws Exception {
+    Files.writeString(tempDir.resolve(".jacet.json"), "{ \"imports\": { \"removeUnused\": false } }\n");
+    final var file = tempDir.resolve("Unused.java");
+    Files.writeString(file, "import java.util.Map;\n\npublic class Unused {}\n");
+
+    final var result = this.run("--write", file.toString());
+
+    assertEquals(0, result.exitCode());
+    assertTrue(Files.readString(file).contains("import java.util.Map;"), "config-disabled removal must keep the import");
+  }
+
+  @Test
+  void removeUnusedImportsFlagOverridesConfigOff() throws Exception {
+    Files.writeString(tempDir.resolve(".jacet.json"), "{ \"imports\": { \"removeUnused\": false } }\n");
+    final var file = tempDir.resolve("Unused.java");
+    Files.writeString(file, "import java.util.Map;\n\npublic class Unused {}\n");
+
+    final var result = this.run("--write", "--remove-unused-imports", file.toString());
+
+    assertEquals(0, result.exitCode());
+    assertFalse(Files.readString(file).contains("import java.util.Map;"), "--remove-unused-imports must win over config");
+  }
+
+  @Test
+  void noRemoveUnusedImportsFlagDisablesRemoval() throws Exception {
+    final var file = tempDir.resolve("Unused.java");
+    Files.writeString(file, "import java.util.Map;\n\npublic class Unused {}\n");
+
+    final var result = this.run("--write", "--no-remove-unused-imports", file.toString());
+
+    assertEquals(0, result.exitCode());
+    assertTrue(Files.readString(file).contains("import java.util.Map;"), "--no-remove-unused-imports must keep the import");
+  }
+
+  @Test
   void missingExplicitConfigFileIsRejected() throws Exception {
     final var file = tempDir.resolve("Any.java");
     Files.writeString(file, "public class Any {}\n");

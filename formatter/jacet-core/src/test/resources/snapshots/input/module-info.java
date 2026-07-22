@@ -1,4 +1,4 @@
-import java.util.List;
+import java.util.spi.ToolProvider;
 
 module de.irotation.jacet {
   requires java.base;
@@ -11,7 +11,7 @@ module de.irotation.jacet {
 
   opens de.irotation.jacet to org.junit.platform.commons;
 
-  uses java.util.spi.ToolProvider;
+  uses ToolProvider;
 
   provides java.util.spi.ToolProvider with de.irotation.jacet.cli.Main;
 }

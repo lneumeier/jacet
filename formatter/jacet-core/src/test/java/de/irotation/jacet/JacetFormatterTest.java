@@ -296,7 +296,7 @@ class JacetFormatterTest {
     final var options = new FormatterOptions(140, 2, false, true, EndOfLine.CR, ImportOptions.defaults());
     final var crFormatter = new JacetFormatter(options);
 
-    final var input = "package p;\nimport java.util.Map;\nimport java.util.List;\npublic class Foo {\n}\n";
+    final var input = "package p;\nimport java.util.Map;\nimport java.util.List;\npublic class Foo {\nMap<String, List<String>> m;\n}\n";
     final var result = crFormatter.format(input);
 
     assertFalse(result.contains("\n"), "Expected pure CR output, got bytes containing LF: " + result.replace("\r", "\\r").replace("\n", "\\n"));
@@ -314,7 +314,7 @@ class JacetFormatterTest {
     final var options = new FormatterOptions(140, 2, false, true, EndOfLine.CRLF, ImportOptions.defaults());
     final var crlfFormatter = new JacetFormatter(options);
 
-    final var input = "package p;\nimport java.util.Map;\nimport java.util.List;\npublic class Foo {\n}\n";
+    final var input = "package p;\nimport java.util.Map;\nimport java.util.List;\npublic class Foo {\nMap<String, List<String>> m;\n}\n";
     final var result = crlfFormatter.format(input);
 
     assertTrue(result.contains("\r\n"), "Expected CRLF line endings");
@@ -434,5 +434,104 @@ class JacetFormatterTest {
 
     assertTrue(result.formatted(), "Should be marked as formatted");
     assertFalse(result.hasVerificationErrors(), () -> "Unexpected verification errors: " + result.verificationErrors());
+  }
+
+  private static JacetFormatter keepUnusedFormatter() {
+    final var imports = new ImportOptions(ImportOptions.StaticPosition.TOP, ImportOptions.defaults().groups(), false);
+    return new JacetFormatter(new FormatterOptions(140, 2, false, true, EndOfLine.LF, imports));
+  }
+
+  @Test
+  void removesUnusedImportsByDefault() {
+    final var input = """
+                      package p;
+
+                      import java.util.Map;
+                      import java.util.List;
+
+                      public class Foo {
+                        List<String> names;
+                      }
+                      """;
+
+    final var out = formatter.format(input);
+
+    assertTrue(out.contains("import java.util.List;"), "used import must survive:\n" + out);
+    assertFalse(out.contains("import java.util.Map;"), "unused import must be removed:\n" + out);
+  }
+
+  @Test
+  void keepsUnusedImportsWhenDisabled() {
+    final var input = """
+                      package p;
+
+                      import java.util.Map;
+
+                      public class Foo {}
+                      """;
+
+    final var out = keepUnusedFormatter().format(input);
+
+    assertTrue(out.contains("import java.util.Map;"), "disabled removal must keep unused imports:\n" + out);
+  }
+
+  @Test
+  void removingAllImportsLeavesSingleBlankLine() {
+    final var input = """
+                      package p;
+
+                      import java.util.Map;
+                      import java.util.List;
+
+                      public class Foo {}
+                      """;
+
+    final var out = formatter.format(input);
+
+    assertEquals("""
+                 package p;
+
+                 public class Foo {}
+                 """, out);
+  }
+
+  @Test
+  void removingAllImportsAtEofTrimsDanglingBlankLine() {
+    final var input = "package p;\n\nimport java.util.Map;\n";
+
+    final var out = formatter.format(input);
+
+    assertEquals("package p;\n", out);
+    assertEquals(out, formatter.format(out), "idempotence");
+  }
+
+  @Test
+  void removingSoleImportOfImportOnlyFileYieldsEmptyOutput() {
+    final var input = "import java.util.Map;\n";
+
+    final var out = formatter.format(input);
+
+    assertEquals("", out);
+    assertEquals(out, formatter.format(out), "idempotence");
+  }
+
+  @Test
+  void removeUnusedImportsIsIdempotent() {
+    final var input = """
+                      package p;
+
+                      import java.util.Map;
+                      import java.util.List;
+                      import static java.util.Objects.requireNonNull;
+
+                      public class Foo {
+                        Object o = requireNonNull(new java.util.ArrayList<>());
+                        List<String> names;
+                      }
+                      """;
+
+    final var once = formatter.format(input);
+
+    assertEquals(once, formatter.format(once), "idempotence");
   }
 }

@@ -29,6 +29,9 @@ case "$(uname -m)" in
   *)             err "unsupported architecture: $(uname -m)" ;;
 esac
 
+# Intel macOS binaries are no longer published.
+[ "${os}-${arch}" != "macos-amd64" ] || err "unsupported platform: macOS x86_64 (Intel)"
+
 asset="jacet-${os}-${arch}"
 
 if [ "$VERSION" = "latest" ]; then

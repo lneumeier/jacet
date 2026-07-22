@@ -37,8 +37,6 @@ jobs:
             artifact: jacet-linux-amd64
           - os: ubuntu-24.04-arm
             artifact: jacet-linux-arm64
-          - os: macos-15-intel # last Intel macOS image, retires August 2027
-            artifact: jacet-macos-amd64
           - os: macos-latest
             artifact: jacet-macos-arm64
           - os: windows-latest

@@ -38,7 +38,6 @@ Download the latest binary for your platform from [GitHub Releases](https://gith
 |----------------|--------------------------|
 | Linux x64      | `jacet-linux-amd64`      |
 | Linux ARM64    | `jacet-linux-arm64`      |
-| macOS x64      | `jacet-macos-amd64`      |
 | macOS ARM64    | `jacet-macos-arm64`      |
 | Windows x64    | `jacet-windows-amd64.exe`|
 

@@ -25,7 +25,8 @@ class ConfigLoaderTest {
                        "endOfLine": "CRLF",
                        "imports": {
                          "staticPosition": "TOP",
-                         "groups": ["org", "com", "java"]
+                         "groups": ["org", "com", "java"],
+                         "removeUnused": false
                        }
                      }
                      """;
@@ -39,6 +40,7 @@ class ConfigLoaderTest {
     assertEquals(ImportOptions.StaticPosition.TOP, options.imports().staticPosition());
     assertEquals(3, options.imports().groups().size());
     assertEquals("org", options.imports().groups().getFirst().prefix());
+    assertFalse(options.imports().removeUnused());
   }
 
   @Test
@@ -66,6 +68,7 @@ class ConfigLoaderTest {
     assertFalse(options.useTabs());
     assertEquals(EndOfLine.LF, options.endOfLine());
     assertEquals(ImportOptions.StaticPosition.TOP, options.imports().staticPosition());
+    assertTrue(options.imports().removeUnused());
   }
 
   @Test

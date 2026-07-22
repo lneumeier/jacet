@@ -1,6 +1,7 @@
 package de.irotation.jacet.gradle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -463,6 +464,64 @@ class JacetPluginTest {
       "Second run should reuse the configuration cache entry, got:\n" + second.getOutput()
     );
     assertEquals(TaskOutcome.UP_TO_DATE, second.task(":checkFormatJava").getOutcome());
+  }
+
+  @Test
+  void removesUnusedImportsByDefault() throws IOException {
+    final Path javaFile = projectDir.resolve("src/main/java/Test.java");
+    Files.writeString(javaFile, "import java.util.Map;\n\npublic class Test {}\n");
+
+    final BuildResult result = runner("formatJava").build();
+
+    assertEquals(TaskOutcome.SUCCESS, result.task(":formatJava").getOutcome());
+    assertFalse(Files.readString(javaFile).contains("import java.util.Map;"), "Unused import should have been removed");
+  }
+
+  @Test
+  void extensionDisablesRemoveUnusedImports() throws IOException {
+    Files.writeString(
+      projectDir.resolve("build.gradle"),
+      """
+      plugins {
+        id 'java'
+        id 'de.irotation.jacet'
+      }
+      jacet {
+        removeUnusedImports = false
+      }
+      """
+    );
+    final Path javaFile = projectDir.resolve("src/main/java/Test.java");
+    Files.writeString(javaFile, "import java.util.Map;\n\npublic class Test {}\n");
+
+    final BuildResult result = runner("formatJava").build();
+
+    assertEquals(TaskOutcome.SUCCESS, result.task(":formatJava").getOutcome());
+    assertTrue(Files.readString(javaFile).contains("import java.util.Map;"), "Disabled removal should keep the import");
+  }
+
+  @Test
+  void togglingRemoveUnusedImportsInvalidatesUpToDateCheck() throws IOException {
+    final Path javaFile = projectDir.resolve("src/main/java/Test.java");
+    Files.writeString(javaFile, "public class Test {}\n");
+
+    assertEquals(TaskOutcome.SUCCESS, runner("formatJava").build().task(":formatJava").getOutcome());
+    assertEquals(TaskOutcome.UP_TO_DATE, runner("formatJava").build().task(":formatJava").getOutcome());
+
+    Files.writeString(
+      projectDir.resolve("build.gradle"),
+      """
+      plugins {
+        id 'java'
+        id 'de.irotation.jacet'
+      }
+      jacet {
+        removeUnusedImports = false
+      }
+      """
+    );
+
+    assertEquals(TaskOutcome.SUCCESS, runner("formatJava").build().task(":formatJava").getOutcome());
   }
 
   private GradleRunner runner(final String... args) {

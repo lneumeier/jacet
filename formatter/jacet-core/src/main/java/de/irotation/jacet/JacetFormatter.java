@@ -3,6 +3,7 @@ package de.irotation.jacet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -127,7 +128,7 @@ public final class JacetFormatter {
     final DocumentPrinter printer = new DocumentPrinter(options.printWidth(), options.tabWidth(), options.useTabs(), eol);
     final String formatted = printer.print(document);
 
-    final String sorted = this.formatImports(formatted, eol);
+    final String sorted = this.formatImports(formatted, source, eol);
 
     final String result = FormatterDirectives.postProcess(sorted, preProcessed);
     return new FormatResult(result, true, List.of(), List.of());
@@ -135,15 +136,24 @@ public final class JacetFormatter {
 
   /**
    * Replaces the formatted source's import region with the sorted imports, absorbing any blank lines that
-   * trailed the original region so import-group spacing isn't doubled.
+   * trailed the original region so import-group spacing isn't doubled. With {@link ImportOptions#removeUnused()}
+   * enabled, imports detected by {@link UnusedImportScanner} on {@code original} are dropped before sorting
+   * (matching works because both sides normalize qualified names to dot-joined segments); the scan runs only
+   * when an import region exists, so import-free files never pay for the extra lex pass. When removal empties a
+   * region that runs to end of file, the blank lines that preceded it are trimmed too — a dangling blank line
+   * before EOF would otherwise break {@code format(format(x)) == format(x)}.
    */
-  private String formatImports(final String source, final String eol) {
+  private String formatImports(final String source, final String original, final String eol) {
     final ImportSorter.ImportRegion region = ImportSorter.parseRegion(source);
     if (region.imports().isEmpty()) {
       return source;
     }
 
-    final String sortedImports = ImportSorter.sort(region.imports(), options.imports(), eol);
+    final Set<ImportSorter.ImportStatement> unused = options.imports().removeUnused()
+      ? UnusedImportScanner.findUnused(original)
+      : Set.of();
+    final List<ImportSorter.ImportStatement> kept = region.imports().stream().filter(i -> !unused.contains(i)).toList();
+    final String sortedImports = ImportSorter.sort(kept, options.imports(), eol);
 
     final int beforeEnd = nthLineOffset(source, region.startLine(), eol);
     int afterStart = nthLineOffset(source, region.endLine() + 1, eol);
@@ -158,7 +168,14 @@ public final class JacetFormatter {
     }
 
     final String trailing = source.substring(afterStart);
-    final String separator = trailing.isEmpty() ? "" : eol;
+    if (sortedImports.isEmpty() && trailing.isEmpty()) {
+      int end = beforeEnd;
+      while (end >= eol.length() && source.startsWith(eol, end - eol.length())) {
+        end -= eol.length();
+      }
+      return end == 0 ? "" : source.substring(0, end) + eol;
+    }
+    final String separator = trailing.isEmpty() || sortedImports.isEmpty() ? "" : eol;
     return source.substring(0, beforeEnd) + sortedImports + separator + trailing;
   }
 

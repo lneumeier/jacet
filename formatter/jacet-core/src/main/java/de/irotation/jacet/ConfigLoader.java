@@ -54,7 +54,9 @@ public final class ConfigLoader {
     "useTabs",
     Pattern.compile("\"useTabs\"\\s*:\\s*(true|false)"),
     "forceBraces",
-    Pattern.compile("\"forceBraces\"\\s*:\\s*(true|false)")
+    Pattern.compile("\"forceBraces\"\\s*:\\s*(true|false)"),
+    "removeUnused",
+    Pattern.compile("\"removeUnused\"\\s*:\\s*(true|false)")
   );
   private static final Map<String, Pattern> ENUM_PATTERNS = Map.of(
     "endOfLine",
@@ -70,7 +72,8 @@ public final class ConfigLoader {
     "forceBraces",
     "endOfLine",
     "staticPosition",
-    "groups"
+    "groups",
+    "removeUnused"
   );
 
   /** Per-key pattern used only to detect whether a present key's value parsed at all, for the typo/wrong-type diagnostics. */
@@ -81,7 +84,8 @@ public final class ConfigLoader {
     Map.entry("forceBraces", BOOL_PATTERNS.get("forceBraces")),
     Map.entry("endOfLine", ENUM_PATTERNS.get("endOfLine")),
     Map.entry("staticPosition", ENUM_PATTERNS.get("staticPosition")),
-    Map.entry("groups", GROUPS_PATTERN)
+    Map.entry("groups", GROUPS_PATTERN),
+    Map.entry("removeUnused", BOOL_PATTERNS.get("removeUnused"))
   );
 
   private ConfigLoader() {}
@@ -147,7 +151,8 @@ public final class ConfigLoader {
       enumValue(json, "endOfLine", EndOfLine.class, d.endOfLine()),
       new ImportOptions(
         enumValue(json, "staticPosition", ImportOptions.StaticPosition.class, d.imports().staticPosition()),
-        parseGroups(json, d.imports().groups())
+        parseGroups(json, d.imports().groups()),
+        boolValue(json, "removeUnused", d.imports().removeUnused())
       )
     );
 

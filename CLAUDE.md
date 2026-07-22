@@ -145,14 +145,16 @@ jacet-specific architectural rules that go beyond pure code style.
   colon-style switch. `PredictionMode.LL` is also set.
 - **Trailing comments** use `LineSuffix` in the Document IR. `CommentHelper.leadingComments()` skips same-line trailing comments to prevent
   double-emission.
-- **Token-coverage verification is unconditional**: every format runs `CoverageVerifier`. If the output would drop or duplicate an input
-  token, `JacetFormatter` returns the original source unchanged and reports it as a verification error in `FormatResult` (the CLI and Gradle
-  tasks warn and skip the file). There is no opt-out flag — predictable output over best-effort.
+- **Token-coverage verification runs on every format**: `CoverageVerifier` checks the printed document *before* import post-processing. If
+  the output would drop or duplicate an input token, `JacetFormatter` returns the original source unchanged and reports it as a verification
+  error in `FormatResult` (the CLI and Gradle tasks warn and skip the file). There is no opt-out flag — predictable output over best-effort.
+  The one deliberate downstream exception: with `imports.removeUnused` enabled, the string-based import pass drops unused imports after the
+  check has passed.
 
 ## Configuration
 
 `FormatterOptions` record: `printWidth` (140), `tabWidth` (2), `useTabs` (false), `forceBraces` (true), `endOfLine` (LF), `imports` (groups:
-java, javax, jakarta, org, com, de, lombok; static: TOP).
+java, javax, jakarta, org, com, de, lombok; static: TOP; removeUnused: true).
 
 Config file: `.jacet.json`, lookup walks up from the project dir and stops at the repository root (the first directory containing a
 `.git` entry — directory or file); outside a repository it walks to the filesystem root. There is no home-directory fallback: nothing

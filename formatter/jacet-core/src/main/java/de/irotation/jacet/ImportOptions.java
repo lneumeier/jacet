@@ -7,12 +7,14 @@ import java.util.List;
  *
  * @param staticPosition where static imports appear relative to regular ones
  * @param groups         ordered list of package-prefix groups; non-matching imports fall into an implicit trailing {@code _other} group
+ * @param removeUnused   remove imports whose simple name is never referenced as an identifier in the code or in javadoc tag references;
+ *                       wildcard imports are never removed (see {@link UnusedImportScanner})
  */
-public record ImportOptions(StaticPosition staticPosition, List<Group> groups) {
+public record ImportOptions(StaticPosition staticPosition, List<Group> groups, boolean removeUnused) {
 
   /**
    * Default rules: static imports at the top, groups ordered {@code java}, {@code javax}, {@code jakarta}, {@code org}, {@code com},
-   * {@code de}, {@code lombok}.
+   * {@code de}, {@code lombok}; unused imports are removed.
    */
   public static ImportOptions defaults() {
     return new ImportOptions(
@@ -25,7 +27,8 @@ public record ImportOptions(StaticPosition staticPosition, List<Group> groups) {
         new Group("com"),
         new Group("de"),
         new Group("lombok")
-      )
+      ),
+      true
     );
   }
 

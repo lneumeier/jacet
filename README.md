@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | b
 ```
 To pin a version:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.3.0
+curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.4.0
 ```
 
 **Windows (PowerShell):**
@@ -27,7 +27,7 @@ irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1 | iex
 ```
 To pin a version:
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1))) v0.3.0
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/lneumeier/jacet/main/install.ps1))) v0.4.0
 ```
 
 ### Manual binary download
@@ -51,7 +51,7 @@ sudo mv jacet-* /usr/local/bin/jacet
 
 ```groovy
 plugins {
-    id 'de.irotation.jacet' version '0.3.0'
+    id 'de.irotation.jacet' version '0.4.0'
 }
 ```
 

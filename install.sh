@@ -7,12 +7,12 @@
 #   curl -fsSL https://raw.githubusercontent.com/lneumeier/jacet/main/install.sh | bash -s -- v0.1.0
 #
 # Environment variables:
-#   JACET_INSTALL_DIR  Install directory (default: $HOME/.jacet/bin)
+#   JACET_INSTALL_DIR  Install directory (default: $HOME/.local/bin)
 
 set -euo pipefail
 
 REPO="lneumeier/jacet"
-INSTALL_DIR="${JACET_INSTALL_DIR:-$HOME/.jacet/bin}"
+INSTALL_DIR="${JACET_INSTALL_DIR:-$HOME/.local/bin}"
 VERSION="${1:-latest}"
 
 err() { echo "error: $*" >&2; exit 1; }
@@ -86,6 +86,16 @@ mv "$tmp" "$INSTALL_DIR/jacet"
 trap - EXIT
 
 echo "Installed: $INSTALL_DIR/jacet"
+
+# Earlier revisions of this script installed to ~/.jacet/bin; a leftover copy
+# there can shadow the new one depending on PATH order.
+legacy="$HOME/.jacet/bin/jacet"
+if [ "$INSTALL_DIR/jacet" != "$legacy" ] && [ -e "$legacy" ]; then
+  echo
+  echo "Warning: an older jacet install exists at $legacy."
+  echo "Remove it (and its PATH entry in your shell profile) to avoid running a stale version:"
+  echo "  rm $legacy"
+fi
 
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;

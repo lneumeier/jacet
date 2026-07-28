@@ -8,7 +8,7 @@ Jacet follows its own curated formatting spec: the output is close to, but not b
 
 ### Install script (recommended)
 
-The install scripts pick the right native binary for your platform, verify its SHA256 checksum, install it to `$HOME/.jacet/bin` (override with the `JACET_INSTALL_DIR` env var), and add that directory to your `PATH`.
+The install scripts pick the right native binary for your platform, verify its SHA256 checksum, and install it to `~/.local/bin` (`%USERPROFILE%\.local\bin` on Windows; override with the `JACET_INSTALL_DIR` env var). The Windows script adds that directory to your user `PATH`; on macOS/Linux the script prints a hint if it is not already on your `PATH`.
 
 **macOS / Linux:**
 

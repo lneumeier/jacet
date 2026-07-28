@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   Downloads the jacet native binary from a GitHub release, verifies its
-  SHA256 checksum, installs it to $env:USERPROFILE\.jacet\bin (or
+  SHA256 checksum, installs it to $env:USERPROFILE\.local\bin (or
   $env:JACET_INSTALL_DIR if set), and adds that directory to the current
   user's PATH.
 
@@ -26,7 +26,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $Repo = 'lneumeier/jacet'
-$InstallDir = if ($env:JACET_INSTALL_DIR) { $env:JACET_INSTALL_DIR } else { "$env:USERPROFILE\.jacet\bin" }
+$InstallDir = if ($env:JACET_INSTALL_DIR) { $env:JACET_INSTALL_DIR } else { "$env:USERPROFILE\.local\bin" }
 $Headers = @{ 'User-Agent' = 'jacet-installer' }
 
 # Only amd64 Windows binaries are published; Windows ARM64 runs them via emulation.
@@ -88,6 +88,16 @@ try {
 }
 
 Write-Host "Installed: $target"
+
+# Earlier revisions of this script installed to ~\.jacet\bin; a leftover copy
+# there can shadow the new one depending on PATH order.
+$legacy = Join-Path $env:USERPROFILE '.jacet\bin\jacet.exe'
+if (($target -ne $legacy) -and (Test-Path $legacy)) {
+  Write-Host ""
+  Write-Host "Warning: an older jacet install exists at $legacy."
+  Write-Host "Remove it (and its entry in your user PATH) to avoid running a stale version:"
+  Write-Host "  Remove-Item '$legacy'"
+}
 
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 

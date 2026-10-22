@@ -10,7 +10,11 @@ updates:
           - "*"
 
   - package-ecosystem: gradle
-    directory: /buildtools
+    # Each composite build is scanned separately; the root holds the shared Gradle wrapper.
+    directories:
+      - /
+      - /formatter
+      - /buildtools
     schedule:
       interval: monthly
     groups:

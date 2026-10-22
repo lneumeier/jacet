@@ -3,16 +3,20 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       actions:
         patterns:
           - "*"
 
   - package-ecosystem: gradle
-    directory: /buildtools
+    # Each composite build is scanned separately; the root holds the shared Gradle wrapper.
+    directories:
+      - /
+      - /formatter
+      - /buildtools
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       gradle-deps:
         patterns:

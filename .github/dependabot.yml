@@ -10,14 +10,19 @@ updates:
           - "*"
 
   - package-ecosystem: gradle
-    # Each composite build is scanned separately; the root holds the shared Gradle wrapper.
-    directories:
-      - /
-      - /formatter
-      - /buildtools
+    # Reaches the formatter build via includeBuild, so every build file is fetched exactly once.
+    directory: /buildtools
     schedule:
       interval: weekly
     groups:
       gradle-deps:
         patterns:
           - "*"
+
+  - package-ecosystem: gradle
+    # Only the root holds the Gradle wrapper; dependencies are covered via /buildtools.
+    directory: /
+    schedule:
+      interval: weekly
+    allow:
+      - dependency-name: gradle-wrapper

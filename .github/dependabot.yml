@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       actions:
         patterns:
@@ -16,7 +16,7 @@ updates:
       - /formatter
       - /buildtools
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       gradle-deps:
         patterns:

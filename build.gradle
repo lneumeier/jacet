@@ -1,0 +1,2 @@
+// Intentionally empty: Dependabot's Gradle fetcher requires a build file in the
+// directory it scans; the root entry only exists to update the Gradle wrapper.

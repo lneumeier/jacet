@@ -21,6 +21,7 @@ updates:
 
   - package-ecosystem: gradle
     # Only the root holds the Gradle wrapper; dependencies are covered via /buildtools.
+    # The fetcher requires a build file here, hence the otherwise empty /build.gradle.
     directory: /
     schedule:
       interval: weekly
